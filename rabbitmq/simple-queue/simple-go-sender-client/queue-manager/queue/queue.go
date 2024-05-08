@@ -2,18 +2,24 @@ package queue
 
 import (
 	"context"
-	"example.com/sender-client/connection-manager"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"time"
 )
 
-type DefaultQueue struct {
-	name        string
-	connManager connection_manager.ConnectionManager
+// TODO: change *amqp.Channel to interface for mocking
+
+type ConnectionManager interface {
+	GetChannel() *amqp.Channel
+	Shutdown()
 }
 
-func New(name string, connManager connection_manager.ConnectionManager) *DefaultQueue {
+type DefaultQueue struct {
+	name        string
+	connManager ConnectionManager
+}
+
+func New(name string, connManager ConnectionManager) *DefaultQueue {
 	q := &DefaultQueue{
 		name,
 		connManager,

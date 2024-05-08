@@ -7,7 +7,11 @@ import (
 	"log"
 )
 
-var q queue.Queue
+type Queue interface {
+	PublishPlainText([]byte)
+}
+
+var q Queue
 
 func init() {
 	fmt.Printf("Init")

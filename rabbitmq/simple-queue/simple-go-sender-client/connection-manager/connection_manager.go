@@ -16,7 +16,7 @@ type DefaultConnectionManager struct {
 	ch    *amqp.Channel
 }
 
-func New(name, uri, vhost string) ConnectionManager {
+func New(name, uri, vhost string) *DefaultConnectionManager {
 	return &DefaultConnectionManager{
 		name:  name,
 		uri:   uri,
