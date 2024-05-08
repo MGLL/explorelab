@@ -1,2 +1,2 @@
 # explorelab
-repo for various exploration testing
+Repository for various explorations
