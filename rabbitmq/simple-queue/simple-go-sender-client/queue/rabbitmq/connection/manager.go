@@ -1,4 +1,4 @@
-package connection_manager
+package connection
 
 import (
 	"fmt"
@@ -6,7 +6,8 @@ import (
 	"log"
 )
 
-// TODO: Try to wrap amqp for unit testing (exploration)
+// TODO: External Connection configuration
+// TODO: Connection and Channel wrapper (unit testing exploration)
 
 type DefaultConnectionManager struct {
 	name  string
@@ -31,18 +32,17 @@ func (cm *DefaultConnectionManager) GetChannel() *amqp.Channel {
 		failOnError(err, "Failed to open RabbitMQ channel")
 		cm.ch = ch
 	}
-
 	return cm.ch
 }
 
 func (cm *DefaultConnectionManager) getConnection() *amqp.Connection {
 	if cm.conn == nil {
+		// TODO: Move to Connection Wrapper
 		conn, err := amqp.Dial(
 			fmt.Sprintf("amqp://%s/%s", cm.uri, cm.vhost))
 		failOnError(err, "Failed to connect to RabbitMQ")
 		cm.conn = conn
 	}
-
 	return cm.conn
 }
 

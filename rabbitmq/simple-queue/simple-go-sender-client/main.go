@@ -1,30 +1,27 @@
 package main
 
 import (
-	connManager "example.com/sender-client/connection-manager"
-	"example.com/sender-client/queue-manager/queue"
+	"example.com/sender-client/queue"
+	"example.com/sender-client/queue/manager"
 	"fmt"
 	"log"
 )
 
-type Queue interface {
-	PublishPlainText([]byte)
-}
-
-var q Queue
-
 func init() {
 	fmt.Printf("Init")
-	uri := fmt.Sprintf("%s:%s@%s:%s", "sender", "sender", "localhost", "5672")
-
-	// TODO: new is glue, change for loose coupling
-	conn := connManager.New("rabbitmq-1", uri, "vhost")
-	q = queue.New("hello", conn)
 }
 
 func main() {
-	fmt.Printf("Starting")
+	fmt.Printf("Starting...")
+
+	qm := manager.New(1)
+	q, err := qm.BuildQueue(queue.RabbitMQ, "hello")
+	if err != nil {
+		log.Fatalf("%s: %s", "Failed to build a queue", err)
+	}
+
 	body := "Hello World!"
 	q.PublishPlainText([]byte(body))
+
 	log.Printf(" [x] Sent %s\n", body)
 }

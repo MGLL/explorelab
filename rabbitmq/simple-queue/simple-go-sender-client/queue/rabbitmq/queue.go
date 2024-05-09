@@ -1,7 +1,9 @@
-package queue
+package rabbitmq
 
 import (
 	"context"
+	"example.com/sender-client/queue/rabbitmq/connection"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"time"
@@ -14,23 +16,29 @@ type ConnectionManager interface {
 	Shutdown()
 }
 
-type DefaultQueue struct {
+// TODO: replace connManager by connection
+// TODO: connection should be injected by ConnectionManager
+// TODO: QueueConfig
+
+type Queue struct {
 	name        string
 	connManager ConnectionManager
 }
 
-func New(name string, connManager ConnectionManager) *DefaultQueue {
-	q := &DefaultQueue{
+func New(name string) *Queue {
+	uri := fmt.Sprintf("%s:%s@%s:%s", "sender", "sender", "localhost", "5672")
+	conn := connection.New("rabbitmq-1", uri, "vhost")
+	q := &Queue{
 		name,
-		connManager,
+		conn,
 	}
 	q.declare()
 	return q
 }
 
-func (q *DefaultQueue) declare() {
+func (q *Queue) declare() {
+	// TODO: move elsewhere?
 	ch := q.connManager.GetChannel()
-
 	_, err := ch.QueueDeclare(
 		q.name,
 		false,
@@ -42,7 +50,9 @@ func (q *DefaultQueue) declare() {
 	failOnError(err, "Failed to declare Queue")
 }
 
-func (q *DefaultQueue) PublishPlainText(body []byte) {
+// TODO: verify if connection is not closed
+
+func (q *Queue) PublishPlainText(body []byte) {
 	ch := q.connManager.GetChannel()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -58,6 +68,10 @@ func (q *DefaultQueue) PublishPlainText(body []byte) {
 			Body:        body,
 		})
 	failOnError(err, "Failed to publish a message")
+}
+
+func (q *Queue) GetName() string {
+	return q.name
 }
 
 func failOnError(err error, msg string) {
